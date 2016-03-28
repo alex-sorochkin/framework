@@ -1,6 +1,6 @@
 server {
     listen   81; ## listen for ipv4; this line is default and implied
-    root /home/sanja/sites/test/project;
+    root /home/sanja/sites/test/project/assets;
     index /index.php;
     server_name test;
 
@@ -14,17 +14,16 @@ server {
     }
 
     location ~* ^.+.(css|js|jpeg|jpg|gif|png|ico|woff) {
-        rewrite ^/vendor/(.*)$      /assets/vendor/$1 last;
-        rewrite ^/fonts/(.*)$       /assets/fonts/$1 last;
-        rewrite ^/icons/(.*)$       /assets/icons/$1 last;
-        rewrite ^/images/(.*)$      /assets/images/$1 last;
-        rewrite ^/scripts/(.*)$     /assets/scripts/$1 last;
-        rewrite ^/styles/(.*)$      /assets/styles/$1 last;
-        rewrite ^/fontawesome/(.*)$ /assets/fontawesome/$1 last;
-
+#        rewrite ^/vendor/(.*)$      /assets/vendor/$1 last;
+#        rewrite ^/fonts/(.*)$       /assets/fonts/$1 last;
+#        rewrite ^/icons/(.*)$       /assets/icons/$1 last;
+#        rewrite ^/images/(.*)$      /assets/images/$1 last;
+#        rewrite ^/scripts/(.*)$     /assets/scripts/$1 last;
+#        rewrite ^/styles/(.*)$      /assets/styles/$1 last;
+#        rewrite ^/fontawesome/(.*)$ /assets/fontawesome/$1 last;
+#
         expires 30d;
     }
-
 
     location ~ .(php|phtml)$ {
         fastcgi_index /index.php;
