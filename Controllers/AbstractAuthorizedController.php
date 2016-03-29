@@ -4,8 +4,6 @@ namespace Sanja\Controllers;
 
 use Sanja\Core\Application;
 
-require_once CONTROLLERS . 'AbstractController.php';
-
 /**
  * контроллер, который проверяет авторизацию. сразу срезаем чуваков, которые не прошли логинку
  */

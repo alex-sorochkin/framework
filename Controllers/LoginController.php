@@ -3,10 +3,7 @@
 namespace Sanja\Controllers;
 
 use Sanja\Core\Application;
-use Sanja\View\HtmlView;
-
-require_once CONTROLLERS . 'AbstractController.php';
-require_once CORE . 'View/HtmlView.php';
+use Sanja\Core\View\HtmlView;
 
 class LoginController extends AbstractController {
     const DEFAULT_LOGIN = 'test';

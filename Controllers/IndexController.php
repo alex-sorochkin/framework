@@ -2,10 +2,7 @@
 
 namespace Sanja\Controllers;
 
-use Sanja\View\HtmlView;
-
-require_once CONTROLLERS . 'AbstractController.php';
-require_once CORE . 'View/HtmlView.php';
+use Sanja\Core\View\HtmlView;
 
 class IndexController extends AbstractController {
     public function indexAction() {
