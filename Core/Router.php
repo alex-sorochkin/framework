@@ -56,10 +56,28 @@ class Router {
     }
 
     /**
+     * подготовит и вернет полное имя класса-контроллера
+     *
+     * @return string
+     */
+    public function prepareController() {
+        return CONTROLLERS_NAMESPACE . $this->getController() . 'Controller';
+    }
+
+    /**
+     * подготовит и вернет полное имя метода-действия
+     *
+     * @return string
+     */
+    public function prepareAction() {
+        return $this->getAction() . 'Action';
+    }
+
+    /**
      * @return string
      */
     public function getController() {
-        return $this->controller;
+        return ucfirst($this->controller);
     }
 
     /**
@@ -77,7 +95,7 @@ class Router {
      * @return string
      */
     public function getAction() {
-        return $this->action;
+        return ucfirst($this->action);
     }
 
     /**

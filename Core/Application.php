@@ -63,23 +63,16 @@ class Application {
 
     public function run() {
         $Router = $this->Request->getRouter();
-        $controller = ucfirst($Router->getController());
-        $action = strtolower($Router->getAction());
-
-        $controllerName = $controller . 'Controller';
-        $actionName = $action . 'Action';
-
-        $fullClassName = CONTROLLERS_NAMESPACE . $controllerName;
+        $controller = $Router->prepareController();
+        $action = $Router->prepareAction();
 
         try {
-            require_once CONTROLLERS . $controllerName . '.php';
-
             /** @var AbstractController $ControllerClass */
-            $ControllerClass = new $fullClassName();
+            $ControllerClass = new $controller();
             $ControllerClass->setData($Router->getParams());
-            $this->View = $ControllerClass->$actionName();
+            $this->View = $ControllerClass->$action();
             if ($this->View !== null) {
-                $this->View->setControllerName($controller);
+                $this->View->setControllerName($Router->getController());
                 $this->View->render();
             }
         } catch (Exception $Exception) {
