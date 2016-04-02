@@ -14,9 +14,14 @@ class Application {
     private static $Instance;
 
     /**
-     * @var Router
+     * @var Request
      */
-    private $Router;
+    private $Request;
+
+    /**
+     * @var Response
+     */
+    private $Response;
 
     /**
      * @var AbstractView
@@ -49,15 +54,17 @@ class Application {
          */
         $this->getSession();
 
-        $this->Router = $this->getRouter();
-        $this->getRouter()->extractParams();
+        $this->Request = $this->getRequest();
+        $this->Response = $this->getResponse(); // @todo: задейстовать!!!
+        $this->Request->getRouter()->extractParams();
 
         return $this;
     }
 
     public function run() {
-        $controller = ucfirst($this->getRouter()->getController());
-        $action = strtolower($this->getRouter()->getAction());
+        $Router = $this->Request->getRouter();
+        $controller = ucfirst($Router->getController());
+        $action = strtolower($Router->getAction());
 
         $controllerName = $controller . 'Controller';
         $actionName = $action . 'Action';
@@ -69,7 +76,7 @@ class Application {
 
             /** @var AbstractController $ControllerClass */
             $ControllerClass = new $fullClassName();
-            $ControllerClass->setData($this->getRouter()->getParams());
+            $ControllerClass->setData($Router->getParams());
             $this->View = $ControllerClass->$actionName();
             if ($this->View !== null) {
                 $this->View->setControllerName($controller);
@@ -107,28 +114,6 @@ class Application {
     }
 
     /**
-     * @return Router
-     */
-    public function getRouter() {
-        if ($this->Router === null) {
-            $this->Router = new Router();
-        }
-
-        return $this->Router;
-    }
-
-    /**
-     * @param Router $Router
-     *
-     * @return $this
-     */
-    public function setRouter($Router) {
-        $this->Router = $Router;
-
-        return $this;
-    }
-
-    /**
      * @return Session
      */
     public function getSession() {
@@ -148,6 +133,49 @@ class Application {
      */
     private function setSession($Session) {
         $this->Session = $Session;
+
+        return $this;
+    }
+
+    /**
+     * @return Request
+     */
+    public function getRequest() {
+        if ($this->Request === null) {
+            $this->Request = new Request();
+        }
+
+        return $this->Request;
+    }
+
+    /**
+     * @param Request $Request
+     *
+     * @return $this
+     */
+    public function setRequest($Request) {
+        $this->Request = $Request;
+
+        return $this;
+    }
+
+    /**
+     * @return Response
+     */
+    public function getResponse() {
+        if ($this->Response === null) {
+            $this->Response = new Response();
+        }
+        return $this->Response;
+    }
+
+    /**
+     * @param Response $Response
+     *
+     * @return $this
+     */
+    public function setResponse($Response) {
+        $this->Response = $Response;
 
         return $this;
     }
