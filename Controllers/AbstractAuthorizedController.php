@@ -10,7 +10,7 @@ use Sanja\Core\Application;
 class AbstractAuthorizedController extends AbstractController {
     public function __construct() {
         if (!Application::getInstance()->getSession()->isLoggedIn()) {
-            Application::getInstance()->getRouter()->redirect('/login');
+            Application::getInstance()->getResponse()->redirect('/login');
 
             exit;
         }

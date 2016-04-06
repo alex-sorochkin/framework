@@ -5,6 +5,7 @@ namespace Sanja\Core;
 use ErrorException;
 use Exception;
 use Sanja\Controllers\AbstractController;
+use Sanja\Controllers\ErrorController;
 use Sanja\Core\View\AbstractView;
 
 class Application {
@@ -56,7 +57,7 @@ class Application {
 
         $this->Request = $this->getRequest();
         $this->Response = $this->getResponse(); // @todo: задейстовать!!!
-        $this->Request->getRouter()->extractParams();
+        $this->Request->extractParams();
 
         return $this;
     }
@@ -69,7 +70,7 @@ class Application {
         try {
             /** @var AbstractController $ControllerClass */
             $ControllerClass = new $controller();
-            $ControllerClass->setData($Router->getParams());
+            $ControllerClass->setData($this->Request->getParams());
             $this->View = $ControllerClass->$action();
             if ($this->View !== null) {
                 $this->View->setControllerName($Router->getController());

@@ -20,7 +20,7 @@ class LoginController extends AbstractController {
 
             if ($name == self::DEFAULT_LOGIN && $pass == self::DEFAULT_PASSWORD) {
                 Application::getInstance()->getSession()->logIn();
-                Application::getInstance()->getRouter()->redirect('/index');
+                Application::getInstance()->getResponse()->redirect('/index');
                 return null;
             }
         }

@@ -10,7 +10,7 @@ class LogoutController extends AbstractAuthorizedController {
 
     public function indexAction() {
         Application::getInstance()->getSession()->logOut();
-        Application::getInstance()->getRouter()->redirect('/index');
+        Application::getInstance()->getResponse()->redirect('/index');
         return null;
 
     }

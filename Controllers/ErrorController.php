@@ -1,8 +1,8 @@
 <?php
 
-namespace Sanja\Core;
+namespace Sanja\Controllers;
 
-class ErrorController {
+class ErrorController extends AbstractController {
     public function indexAction() {
         echo 'this is error page';
     }
