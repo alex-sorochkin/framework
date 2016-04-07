@@ -2,6 +2,8 @@
 
 namespace Sanja\Controllers;
 
+use Sanja\Core\Controller\AbstractAuthorizedController;
+
 /**
  * контроллер, который проверяет авторизацию. сразу срезаем чуваков, которые не прошли логинку
  */

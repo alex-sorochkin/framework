@@ -2,6 +2,7 @@
 
 namespace Sanja\Controllers;
 
+use Sanja\Core\Controller\AbstractController;
 use Sanja\Core\View\HtmlView;
 
 class IndexController extends AbstractController {

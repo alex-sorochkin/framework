@@ -3,6 +3,7 @@
 namespace Sanja\Controllers;
 
 use Sanja\Core\Application;
+use Sanja\Core\Controller\AbstractController;
 use Sanja\Core\View\HtmlView;
 
 class LoginController extends AbstractController {
