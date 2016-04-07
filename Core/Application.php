@@ -4,8 +4,9 @@ namespace Sanja\Core;
 
 use ErrorException;
 use Exception;
-use Sanja\Controllers\AbstractController;
-use Sanja\View\AbstractView;
+use Sanja\Core\Controller\AbstractController;
+use Sanja\Controllers\ErrorController;
+use Sanja\Core\View\AbstractView;
 
 class Application {
     /**
@@ -14,9 +15,14 @@ class Application {
     private static $Instance;
 
     /**
-     * @var Router
+     * @var Request
      */
-    private $Router;
+    private $Request;
+
+    /**
+     * @var Response
+     */
+    private $Response;
 
     /**
      * @var AbstractView
@@ -46,35 +52,28 @@ class Application {
          */
         $this->getSession();
 
-        $this->Router = $this->getRouter();
-        $this->getRouter()->extractParams();
+        $this->Request = $this->getRequest();
+        $this->Response = $this->getResponse(); // @todo: задейстовать!!!
+        $this->Request->extractParams();
 
         return $this;
     }
 
     public function run() {
-        $controller = ucfirst($this->getRouter()->getController());
-        $action = strtolower($this->getRouter()->getAction());
-
-        $controllerName = $controller . 'Controller';
-        $actionName = $action . 'Action';
-
-        $fullClassName = CONTROLLERS_NAMESPACE . $controllerName;
+        $Router = $this->Request->getRouter();
+        $controller = $Router->prepareController();
+        $action = $Router->prepareAction();
 
         try {
-            require_once CONTROLLERS . $controllerName . '.php';
-
             /** @var AbstractController $ControllerClass */
-            $ControllerClass = new $fullClassName();
-            $ControllerClass->setData($this->getRouter()->getParams());
-            $this->View = $ControllerClass->$actionName();
+            $ControllerClass = new $controller($this->Request, $this->Response);
+            $this->View = $ControllerClass->$action();
             if ($this->View !== null) {
-                $this->View->setControllerName($controller);
+                $this->View->setControllerName($Router->getController());
                 $this->View->render();
             }
         } catch (Exception $Exception) {
-            require_once CONTROLLERS . 'ErrorController.php';
-            $ErrorController = new ErrorController();
+            $ErrorController = new ErrorController($this->Request, $this->Response);
             $ErrorController->indexAction();
         }
     }
@@ -105,28 +104,6 @@ class Application {
     }
 
     /**
-     * @return Router
-     */
-    public function getRouter() {
-        if ($this->Router === null) {
-            $this->Router = new Router();
-        }
-
-        return $this->Router;
-    }
-
-    /**
-     * @param Router $Router
-     *
-     * @return $this
-     */
-    public function setRouter($Router) {
-        $this->Router = $Router;
-
-        return $this;
-    }
-
-    /**
      * @return Session
      */
     public function getSession() {
@@ -146,6 +123,49 @@ class Application {
      */
     private function setSession($Session) {
         $this->Session = $Session;
+
+        return $this;
+    }
+
+    /**
+     * @return Request
+     */
+    public function getRequest() {
+        if ($this->Request === null) {
+            $this->Request = new Request();
+        }
+
+        return $this->Request;
+    }
+
+    /**
+     * @param Request $Request
+     *
+     * @return $this
+     */
+    public function setRequest($Request) {
+        $this->Request = $Request;
+
+        return $this;
+    }
+
+    /**
+     * @return Response
+     */
+    public function getResponse() {
+        if ($this->Response === null) {
+            $this->Response = new Response();
+        }
+        return $this->Response;
+    }
+
+    /**
+     * @param Response $Response
+     *
+     * @return $this
+     */
+    public function setResponse($Response) {
+        $this->Response = $Response;
 
         return $this;
     }

@@ -1,8 +1,6 @@
 <?php
 
-namespace Sanja\View;
-
-require_once 'AbstractView.php';
+namespace Sanja\Core\View;
 
 class HtmlView extends AbstractView {
     /**

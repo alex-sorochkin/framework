@@ -3,10 +3,8 @@
 namespace Sanja\Controllers;
 
 use Sanja\Core\Application;
-use Sanja\View\HtmlView;
-
-require_once CONTROLLERS . 'AbstractController.php';
-require_once CORE . 'View/HtmlView.php';
+use Sanja\Core\Controller\AbstractController;
+use Sanja\Core\View\HtmlView;
 
 class LoginController extends AbstractController {
     const DEFAULT_LOGIN = 'test';
@@ -23,7 +21,7 @@ class LoginController extends AbstractController {
 
             if ($name == self::DEFAULT_LOGIN && $pass == self::DEFAULT_PASSWORD) {
                 Application::getInstance()->getSession()->logIn();
-                Application::getInstance()->getRouter()->redirect('/index');
+                Application::getInstance()->getResponse()->redirect('/index');
                 return null;
             }
         }

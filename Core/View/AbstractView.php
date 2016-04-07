@@ -1,6 +1,6 @@
 <?php
 
-namespace Sanja\View;
+namespace Sanja\Core\View;
 
 /**
  * абстрактный класс вьюхи

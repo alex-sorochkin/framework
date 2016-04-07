@@ -1,18 +1,20 @@
 <?php
 
-namespace Sanja\Controllers;
+namespace Sanja\Core\Controller;
 
 use Sanja\Core\Application;
-
-require_once CONTROLLERS . 'AbstractController.php';
+use Sanja\Core\Request;
+use Sanja\Core\Response;
 
 /**
  * контроллер, который проверяет авторизацию. сразу срезаем чуваков, которые не прошли логинку
  */
 class AbstractAuthorizedController extends AbstractController {
-    public function __construct() {
+    public function __construct(Request $Request, Response $Response) {
+        parent::__construct($Request, $Response);
+
         if (!Application::getInstance()->getSession()->isLoggedIn()) {
-            Application::getInstance()->getRouter()->redirect('/login');
+            Application::getInstance()->getResponse()->redirect('/login');
 
             exit;
         }

@@ -3,9 +3,7 @@
 namespace Sanja\Controllers;
 
 use Sanja\Core\Application;
-
-require_once CONTROLLERS . 'AbstractAuthorizedController.php';
-require_once CORE . 'View/HtmlView.php';
+use Sanja\Core\Controller\AbstractAuthorizedController;
 
 class LogoutController extends AbstractAuthorizedController {
     const DEFAULT_LOGIN = 'test';
@@ -13,7 +11,7 @@ class LogoutController extends AbstractAuthorizedController {
 
     public function indexAction() {
         Application::getInstance()->getSession()->logOut();
-        Application::getInstance()->getRouter()->redirect('/index');
+        Application::getInstance()->getResponse()->redirect('/index');
         return null;
 
     }
