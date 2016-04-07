@@ -9,6 +9,11 @@ class Autoloader {
 
     public function autoload($className) {
         $nameParts = explode('\\', $className);
+        // подключаем классы только из собственного неймспейса
+        if ($nameParts[0] !== SANJA_NAMESPACE) {
+            return;
+        }
+
         unset($nameParts[0]);
         $newClassName = ROOT . implode('/', $nameParts) . '.php';
         if (!file_exists($newClassName)) {

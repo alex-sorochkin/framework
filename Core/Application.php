@@ -42,9 +42,6 @@ class Application {
     }
 
     public function initialize() {
-        require_once CORE . 'Autoloader.php';
-        Autoloader::register();
-
 //        error_reporting(E_ALL ^ E_DEPRECATED ^ E_STRICT);
         set_error_handler([$this, 'fatalHandler']);
 //        register_shutdown_function([$this, 'shutdownHandler']);
