@@ -25,7 +25,7 @@ server {
         expires 30d;
     }
 
-    location ~ .(php|phtml)$ {
+    location ~ .(php|phtml|json)$ {
         fastcgi_index /index.php;
         fastcgi_param ENVIRONMENT development;
         fastcgi_param SCRIPT_FILENAME /home/sanja/sites/test/project/$fastcgi_script_name;

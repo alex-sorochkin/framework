@@ -4,9 +4,23 @@ namespace Sanja\Core;
 
 use ErrorException;
 use Exception;
+use Monolog\Formatter\ChromePHPFormatter;
+use Monolog\Formatter\FlowdockFormatter;
+use Monolog\Formatter\FluentdFormatter;
+use Monolog\Formatter\GelfMessageFormatter;
+use Monolog\Formatter\HtmlFormatter;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Formatter\LogglyFormatter;
+use Monolog\Formatter\LogstashFormatter;
+use Monolog\Formatter\NormalizerFormatter;
+use Monolog\Formatter\ScalarFormatter;
+use Monolog\Formatter\WildfireFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Sanja\Core\Controller\AbstractController;
 use Sanja\Controllers\ErrorController;
 use Sanja\Core\View\AbstractView;
+use Sanja\Core\View\HtmlView;
 
 class Application {
     /**
@@ -67,12 +81,21 @@ class Application {
         try {
             /** @var AbstractController $ControllerClass */
             $ControllerClass = new $controller($this->Request, $this->Response);
-            $this->View = $ControllerClass->$action();
-            if ($this->View !== null) {
-                $this->View->setControllerName($Router->getController());
-                $this->View->render();
-            }
+            // @todo: сделать проверку возврата
+            $ControllerClass->$action();
+
+            // контроллер внутри себя должен менять состояние Response-а, обновим его явно
+            $this->Response = $ControllerClass->getResponse();
+
+            $this->View = AbstractView::create($this->getResponse());
+
+            $this->View->setControllerName($Router->getController());
+            $this->View->set($Router->getController());
+
+            $this->View->render();
         } catch (Exception $Exception) {
+            LoggerFactory::getLogger('Root')->addCritical($Exception);
+
             $ErrorController = new ErrorController($this->Request, $this->Response);
             $ErrorController->indexAction();
         }

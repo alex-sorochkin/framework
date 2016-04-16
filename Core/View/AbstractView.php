@@ -1,6 +1,7 @@
 <?php
 
 namespace Sanja\Core\View;
+use Sanja\Core\Response;
 
 /**
  * абстрактный класс вьюхи
@@ -10,6 +11,9 @@ namespace Sanja\Core\View;
  * @todo: подумать, как это вообще все парсить. на чистом, или использовать какой-то шаблонизатор
  */
 abstract class AbstractView {
+    const VIEW_TYPE_HTML = 'html';
+    const VIEW_TYPE_JSON = 'json';
+
     /**
      * @var mixed[] любые параметры в виде ассоциативного массива, которые можно устанавливать в ходе работы контроллера
      */
@@ -40,15 +44,18 @@ abstract class AbstractView {
      */
     protected $controllerName;
 
-    /**
-     * @param string $viewName
-     * @param bool   $useLayout
-     */
-    public function __construct($viewName, $useLayout = true) {
-        $this->layout = 'Main';
+    public static function create(Response $Response) {
+        $View = null;
+        switch ($Response->getViewType()) {
+            case AbstractView::VIEW_TYPE_HTML:
+                $View = new HtmlView();
+                break;
+            case AbstractView::VIEW_TYPE_JSON:
+                $View = new JsonView();
+                break;
+        }
 
-        $this->viewName = $viewName;
-        $this->useLayout = $useLayout;
+        return $View;
     }
 
     /**

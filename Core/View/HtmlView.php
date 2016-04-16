@@ -4,6 +4,17 @@ namespace Sanja\Core\View;
 
 class HtmlView extends AbstractView {
     /**
+     * @param string $viewName
+     * @param bool   $useLayout
+     */
+    public function __construct($viewName, $useLayout = true) {
+        $this->layout = 'Main';
+
+        $this->viewName = $viewName;
+        $this->useLayout = $useLayout;
+    }
+
+    /**
      * @inheritdoc
      */
     public function render() {
