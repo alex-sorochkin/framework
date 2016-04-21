@@ -4,23 +4,9 @@ namespace Sanja\Core;
 
 use ErrorException;
 use Exception;
-use Monolog\Formatter\ChromePHPFormatter;
-use Monolog\Formatter\FlowdockFormatter;
-use Monolog\Formatter\FluentdFormatter;
-use Monolog\Formatter\GelfMessageFormatter;
-use Monolog\Formatter\HtmlFormatter;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Formatter\LogglyFormatter;
-use Monolog\Formatter\LogstashFormatter;
-use Monolog\Formatter\NormalizerFormatter;
-use Monolog\Formatter\ScalarFormatter;
-use Monolog\Formatter\WildfireFormatter;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use Sanja\Core\Controller\AbstractController;
 use Sanja\Controllers\ErrorController;
 use Sanja\Core\View\AbstractView;
-use Sanja\Core\View\HtmlView;
 
 class Application {
     /**
@@ -57,8 +43,8 @@ class Application {
 
     public function initialize() {
 //        error_reporting(E_ALL ^ E_DEPRECATED ^ E_STRICT);
-        set_error_handler([$this, 'fatalHandler']);
-//        register_shutdown_function([$this, 'shutdownHandler']);
+//        set_error_handler([$this, 'fatalHandler']);
+        register_shutdown_function([$this, 'shutdownHandler']);
 
         /**
          * @todo: инициализация произойдет уже внутри, поэтому не надо ничего присваивать
@@ -87,11 +73,9 @@ class Application {
             // контроллер внутри себя должен менять состояние Response-а, обновим его явно
             $this->Response = $ControllerClass->getResponse();
 
-            $this->View = AbstractView::create($this->getResponse());
+            $this->View = AbstractView::create($this->getRequest());
 
             $this->View->setControllerName($Router->getController());
-            $this->View->set($Router->getController());
-
             $this->View->render();
         } catch (Exception $Exception) {
             LoggerFactory::getLogger('Root')->addCritical($Exception);
@@ -114,16 +98,32 @@ class Application {
     }
 
     public function shutdownHandler()  {
-//        require_once CONTROLLERS . 'ErrorController.php';
-//        $ErrorController = new ErrorController();
-//        $ErrorController->indexAction();
-
-
-        $last_error = error_get_last();
-        if ($last_error && $last_error['type']==E_ERROR)  {
-//            header("HTTP/1.1 500 Internal Server Error");
-            echo '...';//html for 500 page
+        $error = error_get_last();
+        if (
+            !is_array($error) ||
+            (
+                $error['type'] != E_ERROR &&
+                $error['type'] != E_PARSE &&
+                $error['type'] != E_CORE_ERROR &&
+                $error['type'] != E_COMPILE_ERROR
+            )
+        ) {
+            return;
         }
+
+        $typeNames = [
+            E_ERROR => 'E_ERROR',
+            E_PARSE => 'E_PARSE',
+            E_CORE_ERROR => 'E_CORE_ERROR',
+            E_COMPILE_ERROR => 'E_COMPILE_ERROR',
+        ];
+
+        $msg = '(' . $typeNames[$error['type']] . '): ' . $error['message'];
+        $Exception = new ErrorException($msg, $error['type'], 1, $error['file'], $error['line']);
+        LoggerFactory::getLogger('Root')->critical($Exception);
+
+        $ErrorController = new ErrorController($this->getRequest(), $this->getResponse());
+        $ErrorController->indexAction();
     }
 
     /**

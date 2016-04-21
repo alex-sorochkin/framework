@@ -1,6 +1,7 @@
 <?php
 
 namespace Sanja\Core\View;
+use Sanja\Core\Request;
 use Sanja\Core\Response;
 
 /**
@@ -44,11 +45,11 @@ abstract class AbstractView {
      */
     protected $controllerName;
 
-    public static function create(Response $Response) {
+    public static function create(Request $Request) {
         $View = null;
-        switch ($Response->getViewType()) {
+        switch ($Request->getViewType()) {
             case AbstractView::VIEW_TYPE_HTML:
-                $View = new HtmlView();
+                $View = new HtmlView($Request->getRouter()->getAction());
                 break;
             case AbstractView::VIEW_TYPE_JSON:
                 $View = new JsonView();
