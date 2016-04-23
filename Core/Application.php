@@ -68,12 +68,12 @@ class Application {
             /** @var AbstractController $ControllerClass */
             $ControllerClass = new $controller($this->Request, $this->Response);
             // @todo: сделать проверку возврата
-            $ControllerClass->$action();
+            $this->View = $ControllerClass->$action();
 
             // контроллер внутри себя должен менять состояние Response-а, обновим его явно
             $this->Response = $ControllerClass->getResponse();
 
-            $this->View = AbstractView::create($this->getRequest());
+//            $this->View = AbstractView::create($this->getRequest());
 
             $this->View->setControllerName($Router->getController());
             $this->View->render();
