@@ -6,6 +6,8 @@ use ErrorException;
 use Exception;
 use Sanja\Core\Controller\AbstractController;
 use Sanja\Controllers\ErrorController;
+use Sanja\Core\Exception\ActionDoesNotExistsException;
+use Sanja\Core\Exception\FileDoesNotExistsException;
 use Sanja\Core\View\AbstractView;
 
 class Application {
@@ -65,24 +67,49 @@ class Application {
         $action = $Router->prepareAction();
 
         try {
-            /** @var AbstractController $ControllerClass */
-            $ControllerClass = new $controller($this->Request, $this->Response);
-            // @todo: сделать проверку возврата
-            $this->View = $ControllerClass->$action();
+            $this->dispatch($controller, $action);
+        } catch (FileDoesNotExistsException $Exception) {
+            LoggerFactory::getLogger('Root')->addCritical($Exception);
+            // @todo: дополнительная проверка роутов
+            throw new Exception('additional routes are not implemented yet');
 
-            // контроллер внутри себя должен менять состояние Response-а, обновим его явно
-            $this->Response = $ControllerClass->getResponse();
+        // тут можно отдельно ловить исключение отсутствия метода в классе,
+        // но пока у меня нет способа для его грамотной обработки и, возможно, не появится
 
-//            $this->View = AbstractView::create($this->getRequest());
-
-            $this->View->setControllerName($Router->getController());
-            $this->View->render();
         } catch (Exception $Exception) {
             LoggerFactory::getLogger('Root')->addCritical($Exception);
 
-            $ErrorController = new ErrorController($this->Request, $this->Response);
-            $ErrorController->indexAction();
+            $this->dispatch(ErrorController::class, 'index');
         }
+    }
+
+    /**
+     * создает контроллер и запускает экшен
+     * потом рендерит вью
+     *
+     * @param string $controller
+     * @param string $action
+     *
+     * @throws ActionDoesNotExistsException
+     */
+    private function dispatch($controller, $action) {
+        /** @var AbstractController $ControllerClass */
+        $ControllerClass = new $controller($this->Request, $this->Response);
+
+        if (!method_exists($ControllerClass, $action)) {
+            throw new ActionDoesNotExistsException();
+        }
+
+        // @todo: сделать проверку возврата
+        $this->View = $ControllerClass->$action();
+
+        // контроллер внутри себя должен менять состояние Response-а, обновим его явно
+        $this->Response = $ControllerClass->getResponse();
+
+//            $this->View = AbstractView::create($this->getRequest());
+
+        $this->View->setControllerName($this->getRequest()->getRouter()->getController());
+        $this->View->render();
     }
 
     public function finalize() {
