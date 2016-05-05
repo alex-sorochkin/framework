@@ -2,9 +2,14 @@
 
 namespace Sanja\Core;
 
+use Sanja\Core\View\AbstractView;
+
 class Request {
     /** @var array $params массив переданных параметров */
     private $params;
+
+    /** @var string $viewType какого типа у нас будет отдаваться VIEW */
+    private $viewType;
 
     /**
      * @var Router
@@ -13,6 +18,7 @@ class Request {
 
     public function __construct() {
         $this->params = [];
+        $this->viewType = AbstractView::VIEW_TYPE_HTML;
     }
 
     /**
@@ -44,6 +50,13 @@ class Request {
             foreach ($_POST as $key => $item) {
                 $this->params[$key] = $item;
             }
+        }
+
+        // попробуем определить тип View тут. @todo: проверить, что с POST тоже будет работать
+        // будем считать .json отдельным признаком, в остальных случаях это html
+        // остальные ситуации будут требовать отдельных реализаций
+        if (preg_match('|\.json|', $_SERVER['REQUEST_URI'])) {
+            $this->viewType = AbstractView::VIEW_TYPE_JSON;
         }
     }
 
@@ -83,6 +96,24 @@ class Request {
      */
     public function setParams($params) {
         $this->params = $params;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getViewType() {
+        return $this->viewType;
+    }
+
+    /**
+     * @param string $viewType
+     *
+     * @return $this
+     */
+    public function setViewType($viewType) {
+        $this->viewType = $viewType;
 
         return $this;
     }

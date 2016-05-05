@@ -1,6 +1,8 @@
 <?php
 
 namespace Sanja\Core\View;
+use Sanja\Core\Request;
+use Sanja\Core\Response;
 
 /**
  * абстрактный класс вьюхи
@@ -10,28 +12,13 @@ namespace Sanja\Core\View;
  * @todo: подумать, как это вообще все парсить. на чистом, или использовать какой-то шаблонизатор
  */
 abstract class AbstractView {
+    const VIEW_TYPE_HTML = 'html';
+    const VIEW_TYPE_JSON = 'json';
+
     /**
      * @var mixed[] любые параметры в виде ассоциативного массива, которые можно устанавливать в ходе работы контроллера
      */
     protected $params;
-
-    /**
-     * @var string имя лайаута
-     */
-    protected $layout;
-
-    /**
-     * @var string
-     * имя вьюхи, которую будем рендерить
-     * вьюху можно достать только из папки по имени контроллера
-     * желательно, чтобы имя совпадало с именем экшена, но это не принципиально, эти имена могут и не совпадать
-     */
-    protected $viewName;
-
-    /**
-     * @var bool
-     */
-    protected $useLayout;
 
     /**
      * @var string
@@ -41,15 +28,22 @@ abstract class AbstractView {
     protected $controllerName;
 
     /**
-     * @param string $viewName
-     * @param bool   $useLayout
+     *  @todo: сейчас удобней возращать полностью сформированную вью из контроллера, и пока не понятно,
+     * будет ли этим и дальше заниматься контроллер. или лучше полностью переложить на Апп
      */
-    public function __construct($viewName, $useLayout = true) {
-        $this->layout = 'Main';
-
-        $this->viewName = $viewName;
-        $this->useLayout = $useLayout;
-    }
+//    public static function create(Request $Request) {
+//        $View = null;
+//        switch ($Request->getViewType()) {
+//            case AbstractView::VIEW_TYPE_HTML:
+//                $View = new HtmlView($Request->getRouter()->getAction());
+//                break;
+//            case AbstractView::VIEW_TYPE_JSON:
+//                $View = new JsonView();
+//                break;
+//        }
+//
+//        return $View;
+//    }
 
     /**
      * абстрактная функция рендеринга вьюхи
@@ -58,23 +52,6 @@ abstract class AbstractView {
      * определять, что делать, будет каждый конкретный наследник данного класса
      */
     abstract public function render();
-
-    protected function renderContent() {
-        require VIEWS . $this->getControllerName() . '/' . ucfirst($this->getViewName()) . '.phtml';
-    }
-
-    protected function renderLayoutPart($partName) {
-        require VIEWS . $this->getLayoutDir() . '/' . $this->getLayout() . '/' . ucfirst($partName) . '.phtml';
-    }
-
-    /**
-     * Получить имя каталога с лайаутами
-     *
-     * @return string
-     */
-    public function getLayoutDir() {
-        return 'Layouts';
-    }
 
     /**
      * @return mixed[]
@@ -94,41 +71,7 @@ abstract class AbstractView {
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getLayout() {
-        return $this->layout;
-    }
 
-    /**
-     * @param string $layout
-     *
-     * @return $this
-     */
-    public function setLayout($layout) {
-        $this->layout = $layout;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getViewName() {
-        return $this->viewName;
-    }
-
-    /**
-     * @param string $viewName
-     *
-     * @return $this
-     */
-    public function setViewName($viewName) {
-        $this->viewName = $viewName;
-
-        return $this;
-    }
 
     /**
      * @return string
@@ -144,24 +87,6 @@ abstract class AbstractView {
      */
     public function setControllerName($controllerName) {
         $this->controllerName = $controllerName;
-
-        return $this;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isUseLayout() {
-        return $this->useLayout;
-    }
-
-    /**
-     * @param boolean $useLayout
-     *
-     * @return $this
-     */
-    public function setUseLayout($useLayout) {
-        $this->useLayout = $useLayout;
 
         return $this;
     }

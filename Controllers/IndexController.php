@@ -8,6 +8,8 @@ use Sanja\Core\View\HtmlView;
 class IndexController extends AbstractController {
     public function indexAction() {
 
-        return new HtmlView('index');
+        $View = new HtmlView('index');
+
+        return $View;
     }
 }

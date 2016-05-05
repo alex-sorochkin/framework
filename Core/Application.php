@@ -6,6 +6,8 @@ use ErrorException;
 use Exception;
 use Sanja\Core\Controller\AbstractController;
 use Sanja\Controllers\ErrorController;
+use Sanja\Core\Exception\ActionDoesNotExistsException;
+use Sanja\Core\Exception\FileDoesNotExistsException;
 use Sanja\Core\View\AbstractView;
 
 class Application {
@@ -43,8 +45,8 @@ class Application {
 
     public function initialize() {
 //        error_reporting(E_ALL ^ E_DEPRECATED ^ E_STRICT);
-        set_error_handler([$this, 'fatalHandler']);
-//        register_shutdown_function([$this, 'shutdownHandler']);
+//        set_error_handler([$this, 'fatalHandler']);
+        register_shutdown_function([$this, 'shutdownHandler']);
 
         /**
          * @todo: инициализация произойдет уже внутри, поэтому не надо ничего присваивать
@@ -65,17 +67,49 @@ class Application {
         $action = $Router->prepareAction();
 
         try {
-            /** @var AbstractController $ControllerClass */
-            $ControllerClass = new $controller($this->Request, $this->Response);
-            $this->View = $ControllerClass->$action();
-            if ($this->View !== null) {
-                $this->View->setControllerName($Router->getController());
-                $this->View->render();
-            }
+            $this->dispatch($controller, $action);
+        } catch (FileDoesNotExistsException $Exception) {
+            LoggerFactory::getLogger('Root')->addCritical($Exception);
+            // @todo: дополнительная проверка роутов
+            throw new Exception('additional routes are not implemented yet');
+
+        // тут можно отдельно ловить исключение отсутствия метода в классе,
+        // но пока у меня нет способа для его грамотной обработки и, возможно, не появится
+
         } catch (Exception $Exception) {
-            $ErrorController = new ErrorController($this->Request, $this->Response);
-            $ErrorController->indexAction();
+            LoggerFactory::getLogger('Root')->addCritical($Exception);
+
+            $this->dispatch(ErrorController::class, 'index');
         }
+    }
+
+    /**
+     * создает контроллер и запускает экшен
+     * потом рендерит вью
+     *
+     * @param string $controller
+     * @param string $action
+     *
+     * @throws ActionDoesNotExistsException
+     */
+    private function dispatch($controller, $action) {
+        /** @var AbstractController $ControllerClass */
+        $ControllerClass = new $controller($this->Request, $this->Response);
+
+        if (!method_exists($ControllerClass, $action)) {
+            throw new ActionDoesNotExistsException();
+        }
+
+        // @todo: сделать проверку возврата
+        $this->View = $ControllerClass->$action();
+
+        // контроллер внутри себя должен менять состояние Response-а, обновим его явно
+        $this->Response = $ControllerClass->getResponse();
+
+//            $this->View = AbstractView::create($this->getRequest());
+
+        $this->View->setControllerName($this->getRequest()->getRouter()->getController());
+        $this->View->render();
     }
 
     public function finalize() {
@@ -91,16 +125,32 @@ class Application {
     }
 
     public function shutdownHandler()  {
-//        require_once CONTROLLERS . 'ErrorController.php';
-//        $ErrorController = new ErrorController();
-//        $ErrorController->indexAction();
-
-
-        $last_error = error_get_last();
-        if ($last_error && $last_error['type']==E_ERROR)  {
-//            header("HTTP/1.1 500 Internal Server Error");
-            echo '...';//html for 500 page
+        $error = error_get_last();
+        if (
+            !is_array($error) ||
+            (
+                $error['type'] != E_ERROR &&
+                $error['type'] != E_PARSE &&
+                $error['type'] != E_CORE_ERROR &&
+                $error['type'] != E_COMPILE_ERROR
+            )
+        ) {
+            return;
         }
+
+        $typeNames = [
+            E_ERROR => 'E_ERROR',
+            E_PARSE => 'E_PARSE',
+            E_CORE_ERROR => 'E_CORE_ERROR',
+            E_COMPILE_ERROR => 'E_COMPILE_ERROR',
+        ];
+
+        $msg = '(' . $typeNames[$error['type']] . '): ' . $error['message'];
+        $Exception = new ErrorException($msg, $error['type'], 1, $error['file'], $error['line']);
+        LoggerFactory::getLogger('Root')->critical($Exception);
+
+        $ErrorController = new ErrorController($this->getRequest(), $this->getResponse());
+        $ErrorController->indexAction();
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Sanja\Core;
 
+use Sanja\Core\Exception\FileDoesNotExistsException;
+
 class Autoloader {
     public static function register() {
         spl_autoload_register([new self(), 'autoload']);
@@ -17,7 +19,10 @@ class Autoloader {
         unset($nameParts[0]);
         $newClassName = ROOT . implode('/', $nameParts) . '.php';
         if (!file_exists($newClassName)) {
-            throw new \Exception(sprintf('Не могу подключить файл [%s]: файл не существует', $newClassName));
+            throw new FileDoesNotExistsException(sprintf(
+                'Не могу подключить файл [%s]: файл не существует',
+                $newClassName
+            ));
         }
 
         require_once $newClassName;
